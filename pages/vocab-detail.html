@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายละเอียดคำศัพท์ - MK Vocab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div id="app-content">
+            <div style="text-align: center; padding: 100px 20px;">
+                <div style="font-size: 48px; margin-bottom: 16px;">📚</div>
+                <div style="color: var(--text-secondary);">กำลังโหลด...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/storage.js"></script>
+    <script src="../js/speech.js"></script>
+    <script>
+        const VocabDetail = {
+            grade: 'm1',
+            wordId: null,
+            word: null,
+            allWords: [],
+
+            async init() {
+                const params = new URLSearchParams(window.location.search);
+                this.grade = params.get('grade') || 'm1';
+                this.wordId = parseInt(params.get('id'));
+
+                await this.loadData();
+                this.render();
+                this.setupDarkMode();
+            },
+
+            async loadData() {
+                try {
+                    const response = await fetch(`../data/${this.grade}.json`);
+                    const data = await response.json();
+                    this.allWords = data.words || [];
+                    this.word = this.allWords.find(w => w.id === this.wordId);
+                } catch (error) {
+                    console.error('Error loading vocab data:', error);
+                }
+            },
+
+            render() {
+                if (!this.word) {
+                    document.getElementById('app-content').innerHTML = `
+                        <div style="text-align: center; padding: 100px 20px;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+                            <div>ไม่พบคำศัพท์</div>
+                            <a href="vocab-list.html?grade=${this.grade}" class="btn btn-primary mt-4">กลับ</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const isLearned = Storage.isLearned(this.grade, this.word.id);
+                const isFavorite = Storage.isFavorite(this.grade, this.word.id);
+                const currentIndex = this.allWords.findIndex(w => w.id === this.wordId);
+                const prevWord = currentIndex > 0 ? this.allWords[currentIndex - 1] : null;
+                const nextWord = currentIndex < this.allWords.length - 1 ? this.allWords[currentIndex + 1] : null;
+
+                document.getElementById('app-content').innerHTML = `
+                    <div class="header fade-in">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                            <a href="vocab-list.html?grade=${this.grade}" style="color: var(--apple-blue); text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 4px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                                </svg>
+                                กลับ
+                            </a>
+                            <button onclick="VocabDetail.toggleFavorite()" style="background: none; border: none; cursor: pointer; font-size: 24px; padding: 8px;">
+                                ${isFavorite ? '⭐' : '☆'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card fade-in" style="text-align: center; padding: 40px 24px; animation-delay: 0.1s;">
+                        <div style="font-size: 42px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">
+                            ${this.word.word}
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 24px;">
+                            <span class="cefr-badge cefr-${this.word.cefr.toLowerCase()}">${this.word.cefr}</span>
+                            <span style="color: var(--text-secondary); font-size: 14px;">${this.word.partOfSpeech}</span>
+                        </div>
+                        
+                        <button onclick="VocabDetail.speak()" class="audio-btn pulse" style="margin: 0 auto 24px;">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                            </svg>
+                        </button>
+
+                        <div style="font-size: 28px; color: var(--text-primary); margin-bottom: 8px;">
+                            ${this.word.thai}
+                        </div>
+                    </div>
+
+                    ${this.word.synonyms ? `
+                        <div class="card fade-in" style="margin-top: 16px; animation-delay: 0.2s;">
+                            <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">คำที่มีความหมายคล้ายกัน</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                ${this.word.synonyms.split(',').map(s => `
+                                    <span style="background: rgba(0,122,255,0.1); color: var(--apple-blue); padding: 6px 12px; border-radius: 8px; font-size: 14px;">
+                                        ${s.trim()}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="fade-in" style="margin-top: 24px; animation-delay: 0.3s;">
+                        <button onclick="VocabDetail.toggleLearned()" class="btn ${isLearned ? 'btn-secondary' : 'btn-primary'}" style="width: 100%;">
+                            ${isLearned ? '✓ เรียนรู้แล้ว' : 'ฉันรู้คำนี้แล้ว'}
+                        </button>
+                    </div>
+
+                    <div class="fade-in" style="display: flex; gap: 12px; margin-top: 16px; animation-delay: 0.35s;">
+                        ${prevWord ? `
+                            <a href="?grade=${this.grade}&id=${prevWord.id}" class="btn btn-secondary" style="flex: 1;">
+                                ← ก่อนหน้า
+                            </a>
+                        ` : '<div style="flex: 1;"></div>'}
+                        ${nextWord ? `
+                            <a href="?grade=${this.grade}&id=${nextWord.id}" class="btn btn-secondary" style="flex: 1;">
+                                ถัดไป →
+                            </a>
+                        ` : '<div style="flex: 1;"></div>'}
+                    </div>
+                `;
+            },
+
+            speak() {
+                Speech.speak(this.word.word);
+            },
+
+            toggleLearned() {
+                const isLearned = Storage.isLearned(this.grade, this.word.id);
+                if (isLearned) {
+                    Storage.unmarkAsLearned(this.grade, this.word.id);
+                } else {
+                    Storage.markAsLearned(this.grade, this.word.id);
+                    Storage.updateStreak();
+                }
+                this.render();
+            },
+
+            toggleFavorite() {
+                Storage.toggleFavorite(this.grade, this.word.id);
+                this.render();
+            },
+
+            setupDarkMode() {
+                const settings = Storage.getSettings();
+                if (settings.darkMode) {
+                    document.body.classList.add('dark');
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            VocabDetail.init();
+        });
+    </script>
+</body>
+
+</html>

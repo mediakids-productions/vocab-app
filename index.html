@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4A90D9">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>MK Vocab - เรียนคำศัพท์</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(180deg, #4A90D9 0%, #5BA3E8 50%, #E8F4FC 50%, #F0F7FC 100%);
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 428px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Section */
+        .header {
+            background: linear-gradient(135deg, #4A90D9 0%, #3B7DC9 100%);
+            padding: 20px 20px 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: #E8F4FC;
+            border-radius: 50% 50% 0 0;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .menu-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .streak-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 14px;
+            border-radius: 20px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .greeting {
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .greeting h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .greeting p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        /* Decorative clouds */
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+        }
+
+        .cloud-1 {
+            right: 20px;
+            top: 80px;
+            width: 60px;
+            height: 30px;
+        }
+
+        .cloud-2 {
+            right: 50px;
+            top: 100px;
+            width: 40px;
+            height: 20px;
+        }
+
+        /* Tree decoration */
+        .tree {
+            position: absolute;
+            right: 30px;
+            top: 60px;
+            font-size: 50px;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 0 20px;
+            margin-top: -40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Goal Card */
+        .goal-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .goal-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .goal-count {
+            font-size: 24px;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .goal-count span {
+            color: #F5A623;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: #E5E5E5;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #F5A623 0%, #FFD93D 100%);
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        .learn-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4A90D9 0%, #5BA3E8 100%);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .learn-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 144, 217, 0.4);
+        }
+
+        .learn-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 24px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            text-decoration: none;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .action-btn .icon {
+            font-size: 28px;
+        }
+
+        .vocab-btn {
+            background: linear-gradient(135deg, #F5A623 0%, #FFB347 100%);
+        }
+
+        .games-btn {
+            background: linear-gradient(135deg, #4A90D9 0%, #6BB9F0 100%);
+        }
+
+        /* Daily Challenge Card */
+        .challenge-card {
+            background: linear-gradient(135deg, #E8F4FC 0%, #D4ECFC 100%);
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(74, 144, 217, 0.2);
+        }
+
+        .challenge-icon {
+            font-size: 50px;
+        }
+
+        .challenge-content {
+            flex: 1;
+        }
+
+        .challenge-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .challenge-desc {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .start-btn {
+            display: inline-block;
+            padding: 10px 32px;
+            background: linear-gradient(135deg, #F5A623 0%, #FFB347 100%);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Grade Selection */
+        .grade-section {
+            margin-top: 24px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .grade-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .grade-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .grade-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .grade-card .emoji {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .grade-card .name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .grade-card .count {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .grade-card .progress-mini {
+            height: 4px;
+            background: #E5E5E5;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .grade-card .progress-mini-fill {
+            height: 100%;
+            border-radius: 2px;
+        }
+
+        .grade-m1 .progress-mini-fill {
+            background: linear-gradient(90deg, #FF6B6B, #FF8E53);
+        }
+
+        .grade-m2 .progress-mini-fill {
+            background: linear-gradient(90deg, #F093FB, #F5576C);
+        }
+
+        .grade-m3 .progress-mini-fill {
+            background: linear-gradient(90deg, #4FACFE, #00F2FE);
+        }
+
+        .grade-m4 .progress-mini-fill {
+            background: linear-gradient(90deg, #43E97B, #38F9D7);
+        }
+
+        .grade-m5 .progress-mini-fill {
+            background: linear-gradient(90deg, #FA709A, #FEE140);
+        }
+
+        .grade-m6 .progress-mini-fill {
+            background: linear-gradient(90deg, #667EEA, #764BA2);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 30px 30px 0 0;
+            padding: 12px 0;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-around;
+            max-width: 428px;
+            margin: 0 auto;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 20px;
+            color: #999;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: #4A90D9;
+        }
+
+        .nav-item svg {
+            width: 26px;
+            height: 26px;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        .delay-1 {
+            animation-delay: 0.1s;
+            opacity: 0;
+        }
+
+        .delay-2 {
+            animation-delay: 0.2s;
+            opacity: 0;
+        }
+
+        .delay-3 {
+            animation-delay: 0.3s;
+            opacity: 0;
+        }
+
+        .delay-4 {
+            animation-delay: 0.4s;
+            opacity: 0;
+        }
+
+        .delay-5 {
+            animation-delay: 0.5s;
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="tree">🌳</div>
+
+        <div class="header-top">
+            <div class="menu-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+                </svg>
+            </div>
+            <div class="streak-badge">
+                🔥 <span id="streak-count">0</span> วัน
+            </div>
+        </div>
+
+        <div class="greeting">
+            <h1 id="greeting-text">สวัสดี!</h1>
+            <p>มาเรียนภาษาอังกฤษกัน</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Today's Goal -->
+        <div class="goal-card fade-in delay-1">
+            <div class="goal-header">
+                <span class="goal-title">เป้าหมายวันนี้</span>
+                <span style="font-size: 24px;">📚</span>
+            </div>
+            <div class="goal-count">
+                <span id="learned-today">0</span> / 20 คำ
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="goal-progress" style="width: 0%"></div>
+            </div>
+            <button class="learn-btn" onclick="goToLearn()">เรียนต่อ</button>
+        </div>
+
+        <!-- Vocabulary Lessons -->
+        <a href="pages/vocab-list.html?grade=m1" class="action-btn vocab-btn fade-in delay-2">
+            <span class="icon">📖</span>
+            <span>Vocabulary Lessons</span>
+        </a>
+
+        <!-- Fun Word Games -->
+        <a href="pages/games.html" class="action-btn games-btn fade-in delay-3">
+            <span class="icon">🎮</span>
+            <span>Fun Word Games</span>
+        </a>
+
+        <!-- Daily Challenge -->
+        <div class="challenge-card fade-in delay-4">
+            <span class="challenge-icon">🏆</span>
+            <div class="challenge-content">
+                <div class="challenge-title">Daily Challenge</div>
+                <div class="challenge-desc">เล่น 3 เกมเพื่อรับรางวัล!</div>
+                <a href="pages/games.html" class="start-btn">Start</a>
+            </div>
+            <span style="font-size: 40px;">🎁</span>
+        </div>
+
+        <!-- Grade Selection -->
+        <div class="grade-section fade-in delay-5">
+            <h2 class="section-title">เลือกระดับชั้น</h2>
+            <div class="grade-grid" id="grade-grid">
+                <!-- Will be filled by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                </svg>
+                <span>Home</span>
+            </a>
+            <a href="pages/vocab-list.html?grade=m1" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z" />
+                </svg>
+                <span>Words</span>
+            </a>
+            <a href="pages/games.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M21.58 16.09l-1.09-7.66C20.21 6.46 18.52 5 16.53 5H7.47C5.48 5 3.79 6.46 3.51 8.43l-1.09 7.66C2.2 17.63 3.39 19 4.94 19c.68 0 1.32-.27 1.8-.75L9 16h6l2.25 2.25c.48.48 1.13.75 1.8.75 1.56 0 2.75-1.37 2.53-2.91z" />
+                </svg>
+                <span>Games</span>
+            </a>
+            <a href="pages/stats.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+                <span>Profile</span>
+            </a>
+        </div>
+    </nav>
+
+    <script src="js/storage.js"></script>
+    <script>
+        // Grade configuration
+        const grades = {
+            m1: { name: 'ม.1', emoji: '📘', total: 499 },
+            m2: { name: 'ม.2', emoji: '📗', total: 500 },
+            m3: { name: 'ม.3', emoji: '📙', total: 500 },
+            m4: { name: 'ม.4', emoji: '📕', total: 500 },
+            m5: { name: 'ม.5', emoji: '📓', total: 500 },
+            m6: { name: 'ม.6', emoji: '📔', total: 500 }
+        };
+
+        // Get greeting based on time
+        function getGreeting() {
+            const hour = new Date().getHours();
+            if (hour < 12) return 'สวัสดีตอนเช้า! ☀️';
+            if (hour < 17) return 'สวัสดีตอนบ่าย! 🌤️';
+            return 'สวัสดีตอนเย็น! 🌙';
+        }
+
+        // Initialize page
+        function init() {
+            // Set greeting
+            document.getElementById('greeting-text').textContent = getGreeting();
+
+            // Get stats
+            const stats = Storage.getStats();
+            document.getElementById('streak-count').textContent = stats.streak || 0;
+
+            // Calculate today's learned words
+            const totalLearned = Storage.getTotalLearned();
+            const todayLearned = Math.min(totalLearned % 20, 20);
+            document.getElementById('learned-today').textContent = todayLearned;
+            document.getElementById('goal-progress').style.width = (todayLearned / 20 * 100) + '%';
+
+            // Update streak
+            Storage.updateStreak();
+
+            // Render grade grid
+            renderGradeGrid();
+        }
+
+        // Render grade cards
+        function renderGradeGrid() {
+            const grid = document.getElementById('grade-grid');
+            let html = '';
+
+            Object.entries(grades).forEach(([key, info]) => {
+                const learned = Storage.getLearned(key).length;
+                const progress = Math.round((learned / info.total) * 100);
+
+                html += `
+                    <a href="pages/vocab-list.html?grade=${key}" class="grade-card grade-${key}">
+                        <div class="emoji">${info.emoji}</div>
+                        <div class="name">${info.name}</div>
+                        <div class="count">${learned}/${info.total}</div>
+                        <div class="progress-mini">
+                            <div class="progress-mini-fill" style="width: ${progress}%"></div>
+                        </div>
+                    </a>
+                `;
+            });
+
+            grid.innerHTML = html;
+        }
+
+        // Go to flashcard
+        function goToLearn() {
+            window.location.href = 'pages/flashcard.html?grade=m1';
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

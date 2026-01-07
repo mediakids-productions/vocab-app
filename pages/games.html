@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกม - MK Vocab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .match-card {
+            aspect-ratio: 1;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 8px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .match-card:hover {
+            transform: scale(1.02);
+        }
+
+        .match-card.selected {
+            background: var(--apple-blue);
+            color: white;
+        }
+
+        .match-card.matched {
+            background: var(--apple-green);
+            color: white;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .match-card.wrong {
+            animation: shake 0.3s ease;
+        }
+
+        .quiz-option {
+            padding: 16px 20px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+
+        .quiz-option:hover {
+            background: rgba(0, 122, 255, 0.1);
+        }
+
+        .quiz-option.correct {
+            background: var(--apple-green);
+            color: white;
+        }
+
+        .quiz-option.wrong {
+            background: var(--apple-red);
+            color: white;
+        }
+
+        .spelling-input {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 24px;
+            text-align: center;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .spelling-input:focus {
+            border-color: var(--apple-blue);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="app-content"></div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="bottom-nav-container">
+            <a href="../index.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                </svg>
+                <span>หน้าแรก</span>
+            </a>
+            <a href="vocab-list.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z" />
+                </svg>
+                <span>คำศัพท์</span>
+            </a>
+            <a href="games.html" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M21.58 16.09l-1.09-7.66C20.21 6.46 18.52 5 16.53 5H7.47C5.48 5 3.79 6.46 3.51 8.43l-1.09 7.66C2.2 17.63 3.39 19 4.94 19c.68 0 1.32-.27 1.8-.75L9 16h6l2.25 2.25c.48.48 1.13.75 1.8.75 1.56 0 2.75-1.37 2.53-2.91z" />
+                </svg>
+                <span>เกม</span>
+            </a>
+            <a href="stats.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+                </svg>
+                <span>สถิติ</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58z" />
+                </svg>
+                <span>ตั้งค่า</span>
+            </a>
+        </div>
+    </nav>
+
+    <script src="../js/storage.js"></script>
+    <script src="../js/speech.js"></script>
+    <script>
+        const Games = {
+            grade: null,
+            words: [],
+            currentGame: null,
+            gameState: {},
+
+            grades: {
+                m1: { name: 'ม.1', gradient: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)' },
+                m2: { name: 'ม.2', gradient: 'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)' },
+                m3: { name: 'ม.3', gradient: 'linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%)' },
+                m4: { name: 'ม.4', gradient: 'linear-gradient(135deg, #43E97B 0%, #38F9D7 100%)' },
+                m5: { name: 'ม.5', gradient: 'linear-gradient(135deg, #FA709A 0%, #FEE140 100%)' },
+                m6: { name: 'ม.6', gradient: 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)' }
+            },
+
+            init() {
+                this.renderGameSelection();
+                this.setupDarkMode();
+            },
+
+            async loadData(grade) {
+                try {
+                    const response = await fetch(`../data/${grade}.json`);
+                    const data = await response.json();
+                    this.words = data.words || [];
+                    this.grade = grade;
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.words = [];
+                }
+            },
+
+            renderGameSelection() {
+                document.getElementById('app-content').innerHTML = `
+                    <div class="header fade-in">
+                        <h1 class="header-title">🎮 เกม</h1>
+                        <p class="header-subtitle">เลือกระดับชั้นและเกมที่ต้องการเล่น</p>
+                    </div>
+
+                    <div class="section fade-in" style="animation-delay: 0.1s">
+                        <h2 class="section-title">เลือกระดับชั้น</h2>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            ${Object.entries(this.grades).map(([key, info]) => `
+                                <button onclick="Games.selectGrade('${key}')" class="btn btn-secondary" style="flex: 1; min-width: 80px;">
+                                    ${info.name}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            },
+
+            async selectGrade(grade) {
+                await this.loadData(grade);
+                this.renderGameList();
+            },
+
+            renderGameList() {
+                const gradeInfo = this.grades[this.grade];
+                document.getElementById('app-content').innerHTML = `
+                    <div class="header fade-in">
+                        <a href="#" onclick="Games.renderGameSelection(); return false;" style="color: var(--apple-blue); text-decoration: none; font-size: 14px;">
+                            ← เปลี่ยนระดับชั้น
+                        </a>
+                        <h1 class="header-title" style="margin-top: 8px;">เกม ${gradeInfo.name}</h1>
+                    </div>
+
+                    <div class="section fade-in" style="animation-delay: 0.1s">
+                        <div class="game-card game-matching" onclick="Games.startMatching()" style="margin-bottom: 16px;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="font-size: 40px;">🧩</div>
+                                <div>
+                                    <div style="font-size: 18px; font-weight: 600;">จับคู่คำศัพท์</div>
+                                    <div style="font-size: 14px; opacity: 0.9;">จับคู่คำภาษาอังกฤษกับความหมายไทย</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="game-card game-spelling" onclick="Games.startSpelling()" style="margin-bottom: 16px;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="font-size: 40px;">✏️</div>
+                                <div>
+                                    <div style="font-size: 18px; font-weight: 600;">สะกดคำ</div>
+                                    <div style="font-size: 14px; opacity: 0.9;">ฟังเสียงและพิมพ์คำศัพท์</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="game-card game-quiz" onclick="Games.startQuiz()">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="font-size: 40px;">❓</div>
+                                <div>
+                                    <div style="font-size: 18px; font-weight: 600;">ควิซ</div>
+                                    <div style="font-size: 14px; opacity: 0.9;">เลือกความหมายที่ถูกต้อง</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            shuffle(array) {
+                const arr = [...array];
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            },
+
+            // MATCHING GAME
+            startMatching() {
+                const selected = this.shuffle(this.words).slice(0, 4);
+                const cards = [];
+                selected.forEach(w => {
+                    cards.push({ id: w.id, type: 'en', text: w.word, match: w.id });
+                    cards.push({ id: w.id + '_th', type: 'th', text: w.thai, match: w.id });
+                });
+
+                this.gameState = {
+                    cards: this.shuffle(cards),
+                    selected: null,
+                    matched: [],
+                    moves: 0,
+                    startTime: Date.now()
+                };
+                this.renderMatching();
+            },
+
+            renderMatching() {
+                const { cards, matched, moves } = this.gameState;
+
+                if (matched.length === cards.length / 2) {
+                    this.renderMatchingComplete();
+                    return;
+                }
+
+                document.getElementById('app-content').innerHTML = `
+                    <div class="header fade-in">
+                        <a href="#" onclick="Games.renderGameList(); return false;" style="color: var(--apple-blue); text-decoration: none; font-size: 14px;">
+                            ← กลับ
+                        </a>
+                        <h1 class="header-title" style="margin-top: 8px;">🧩 จับคู่คำศัพท์</h1>
+                        <div style="display: flex; gap: 16px; margin-top: 8px; color: var(--text-secondary); font-size: 14px;">
+                            <span>จับคู่ได้: ${matched.length}/4</span>
+                            <span>ครั้งที่เปิด: ${moves}</span>
+                        </div>
+                    </div>
+
+                    <div class="game-grid fade-in" style="margin-top: 24px;">
+                        ${cards.map((card, i) => `
+                            <div class="match-card ${this.gameState.selected === i ? 'selected' : ''} ${matched.includes(card.match) ? 'matched' : ''}"
+                                 onclick="Games.selectMatchCard(${i})"
+                                 data-index="${i}">
+                                ${card.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            },
+
+            selectMatchCard(index) {
+                const { cards, selected, matched } = this.gameState;
+                const card = cards[index];
+
+                if (matched.includes(card.match)) return;
+                if (selected === index) return;
+
+                if (selected === null) {
+                    this.gameState.selected = index;
+                    this.renderMatching();
+                } else {
+                    this.gameState.moves++;
+                    const selectedCard = cards[selected];
+
+                    if (selectedCard.match === card.match && selectedCard.type !== card.type) {
+                        this.gameState.matched.push(card.match);
+                        this.gameState.selected = null;
+                        this.renderMatching();
+                    } else {
+                        document.querySelectorAll('.match-card')[index].classList.add('selected');
+                        setTimeout(() => {
+                            document.querySelectorAll('.match-card')[selected].classList.add('wrong');
+                            document.querySelectorAll('.match-card')[index].classList.add('wrong');
+                            setTimeout(() => {
+                                this.gameState.selected = null;
+                                this.renderMatching();
+                            }, 300);
+                        }, 200);
+                    }
+                }
+            },
+
+            renderMatchingComplete() {
+                const time = Math.round((Date.now() - this.gameState.startTime) / 1000);
+                const score = Math.max(100 - this.gameState.moves * 5, 40);
+                Storage.addScore(score);
+                Storage.updateStreak();
+
+                document.getElementById('app-content').innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 80px; margin-bottom: 24px;">🎉</div>
+                        <h1 style="font-size: 28px; font-weight: 700;">ยอดเยี่ยม!</h1>
+                        <div class="card" style="margin: 24px 0;">
+                            <div style="font-size: 48px; font-weight: 700; color: var(--apple-blue);">+${score}</div>
+                            <div style="color: var(--text-secondary);">คะแนน</div>
+                            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 16px; font-size: 14px; color: var(--text-secondary);">
+                                <span>⏱️ ${time} วินาที</span>
+                                <span>👆 ${this.gameState.moves} ครั้ง</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button onclick="Games.startMatching()" class="btn btn-primary" style="flex: 1;">เล่นอีกครั้ง</button>
+                            <button onclick="Games.renderGameList()" class="btn btn-secondary" style="flex: 1;">เกมอื่น</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            // SPELLING GAME
+            startSpelling() {
+                const selected = this.shuffle(this.words).slice(0, 10);
+                this.gameState = {
+                    words: selected,
+                    current: 0,
+                    score: 0,
+                    answers: []
+                };
+                this.renderSpelling();
+            },
+
+            renderSpelling() {
+                const { words, current, score } = this.gameState;
+
+                if (current >= words.length) {
+                    this.renderSpellingComplete();
+                    return;
+                }
+
+                const word = words[current];
+                const progress = (current / words.length) * 100;
+
+                document.getElementById('app-content').innerHTML = `
+                    <div class="header fade-in">
+                        <a href="#" onclick="Games.renderGameList(); return false;" style="color: var(--apple-blue); text-decoration: none; font-size: 14px;">← กลับ</a>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                            <h1 class="header-title">✏️ สะกดคำ</h1>
+                            <span style="color: var(--text-secondary);">${current + 1}/${words.length}</span>
+                        </div>
+                        <div style="height: 6px; background: rgba(0,0,0,0.1); border-radius: 3px; margin-top: 12px;">
+                            <div style="height: 100%; width: ${progress}%; background: var(--apple-blue); border-radius: 3px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card fade-in" style="text-align: center; padding: 40px 24px; margin-top: 24px;">
+                        <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">ฟังและพิมพ์คำศัพท์</div>
+                        <button onclick="Games.speakSpelling()" class="audio-btn pulse" style="margin: 0 auto 24px;">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+                            </svg>
+                        </button>
+                        <div style="font-size: 16px; color: var(--text-secondary); margin-bottom: 24px;">${word.thai}</div>
+                        <input type="text" id="spelling-input" class="spelling-input" placeholder="พิมพ์คำศัพท์..." autocomplete="off" autocapitalize="none">
+                    </div>
+
+                    <button onclick="Games.checkSpelling()" class="btn btn-primary fade-in" style="width: 100%; margin-top: 24px;">
+                        ตรวจคำตอบ
+                    </button>
+                `;
+
+                // Auto-play and focus
+                setTimeout(() => {
+                    Speech.speak(word.word);
+                    document.getElementById('spelling-input').focus();
+                }, 300);
+
+                // Enter key to submit
+                document.getElementById('spelling-input').addEventListener('keyup', (e) => {
+                    if (e.key === 'Enter') this.checkSpelling();
+                });
+            },
+
+            speakSpelling() {
+                const word = this.gameState.words[this.gameState.current];
+                Speech.speak(word.word);
+            },
+
+            checkSpelling() {
+                const input = document.getElementById('spelling-input').value.trim().toLowerCase();
+                const word = this.gameState.words[this.gameState.current];
+                const correct = input === word.word.toLowerCase();
+
+                if (correct) {
+                    this.gameState.score += 10;
+                    Storage.markAsLearned(this.grade, word.id);
+                }
+                this.gameState.answers.push({ word, input, correct });
+
+                // Show result briefly
+                const inputEl = document.getElementById('spelling-input');
+                inputEl.style.borderColor = correct ? 'var(--apple-green)' : 'var(--apple-red)';
+                inputEl.style.background = correct ? 'rgba(52,199,89,0.1)' : 'rgba(255,59,48,0.1)';
+
+                if (!correct) {
+                    inputEl.value = word.word;
+                }
+
+                setTimeout(() => {
+                    this.gameState.current++;
+                    this.renderSpelling();
+                }, correct ? 500 : 1500);
+            },
+
+            renderSpellingComplete() {
+                const { score, answers } = this.gameState;
+                const correctCount = answers.filter(a => a.correct).length;
+                Storage.addScore(score);
+                Storage.updateStreak();
+
+                document.getElementById('app-content').innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <div style="font-size: 80px; margin-bottom: 24px;">${correctCount >= 8 ? '🏆' : correctCount >= 5 ? '👍' : '💪'}</div>
+                        <h1 style="font-size: 28px; font-weight: 700;">${correctCount >= 8 ? 'ยอดเยี่ยม!' : correctCount >= 5 ? 'ทำได้ดี!' : 'พยายามต่อไป!'}</h1>
+                        <div class="card" style="margin: 24px 0;">
+                            <div style="font-size: 48px; font-weight: 700; color: var(--apple-blue);">+${score}</div>
+                            <div style="color: var(--text-secondary);">คะแนน</div>
+                            <div style="margin-top: 8px; color: var(--apple-green);">✓ ถูก ${correctCount}/10</div>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button onclick="Games.startSpelling()" class="btn btn-primary" style="flex: 1;">เล่นอีกครั้ง</button>
+                            <button onclick="Games.renderGameList()" class="btn btn-secondary" style="flex: 1;">เกมอื่น</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            // QUIZ GAME
+            startQuiz() {
+                const selected = this.shuffle(this.words).slice(0, 10);
+                this.gameState = {
+                    words: selected,
+                    current: 0,
+                    score: 0,
+                    answers: []
+                };
+                this.renderQuiz();
+            },
+
+            renderQuiz() {
+                const { words, current, score } = this.gameState;
+
+                if (current >= words.length) {
+                    this.renderQuizComplete();
+                    return;
+                }
+
+                const word = words[current];
+                const progress = (current / words.length) * 100;
+
+                // Generate options
+                let options = [word.thai];
+                const otherWords = this.words.filter(w => w.id !== word.id);
+                const shuffledOthers = this.shuffle(otherWords);
+                for (let i = 0; i < 3 && i < shuffledOthers.length; i++) {
+                    options.push(shuffledOthers[i].thai);
+                }
+                options = this.shuffle(options);
+
+                document.getElementById('app-content').innerHTML = `
+                    <div class="header fade-in">
+                        <a href="#" onclick="Games.renderGameList(); return false;" style="color: var(--apple-blue); text-decoration: none; font-size: 14px;">← กลับ</a>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                            <h1 class="header-title">❓ ควิซ</h1>
+                            <span style="color: var(--text-secondary);">${current + 1}/${words.length}</span>
+                        </div>
+                        <div style="height: 6px; background: rgba(0,0,0,0.1); border-radius: 3px; margin-top: 12px;">
+                            <div style="height: 100%; width: ${progress}%; background: var(--apple-blue); border-radius: 3px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card fade-in" style="text-align: center; padding: 32px 24px; margin-top: 24px;">
+                        <div style="font-size: 32px; font-weight: 700;">${word.word}</div>
+                        <div style="font-size: 14px; color: var(--text-secondary); margin-top: 8px;">${word.partOfSpeech}</div>
+                        <button onclick="Speech.speak('${word.word.replace(/'/g, "\\'")}')" class="btn btn-secondary" style="margin-top: 16px;">
+                            🔊 ฟังเสียง
+                        </button>
+                    </div>
+
+                    <div class="section fade-in" style="margin-top: 24px;">
+                        <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px;">เลือกความหมายที่ถูกต้อง:</div>
+                        ${options.map((opt, i) => `
+                            <div class="quiz-option" onclick="Games.selectQuizOption(${i}, '${opt.replace(/'/g, "\\'")}', '${word.thai.replace(/'/g, "\\'")}')" data-index="${i}">
+                                ${opt}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            },
+
+            selectQuizOption(index, selected, correct) {
+                const isCorrect = selected === correct;
+                const options = document.querySelectorAll('.quiz-option');
+
+                options.forEach((opt, i) => {
+                    opt.style.pointerEvents = 'none';
+                    if (opt.textContent.trim() === correct) {
+                        opt.classList.add('correct');
+                    } else if (i === index && !isCorrect) {
+                        opt.classList.add('wrong');
+                    }
+                });
+
+                if (isCorrect) {
+                    this.gameState.score += 10;
+                    const word = this.gameState.words[this.gameState.current];
+                    Storage.markAsLearned(this.grade, word.id);
+                }
+                this.gameState.answers.push({ correct: isCorrect });
+
+                setTimeout(() => {
+                    this.gameState.current++;
+                    this.renderQuiz();
+                }, 1000);
+            },
+
+            renderQuizComplete() {
+                const { score, answers } = this.gameState;
+                const correctCount = answers.filter(a => a.correct).length;
+                Storage.addScore(score);
+                Storage.updateStreak();
+
+                document.getElementById('app-content').innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <div style="font-size: 80px; margin-bottom: 24px;">${correctCount >= 8 ? '🏆' : correctCount >= 5 ? '👍' : '💪'}</div>
+                        <h1 style="font-size: 28px; font-weight: 700;">${correctCount >= 8 ? 'ยอดเยี่ยม!' : correctCount >= 5 ? 'ทำได้ดี!' : 'พยายามต่อไป!'}</h1>
+                        <div class="card" style="margin: 24px 0;">
+                            <div style="font-size: 48px; font-weight: 700; color: var(--apple-blue);">+${score}</div>
+                            <div style="color: var(--text-secondary);">คะแนน</div>
+                            <div style="margin-top: 8px; color: var(--apple-green);">✓ ถูก ${correctCount}/10</div>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button onclick="Games.startQuiz()" class="btn btn-primary" style="flex: 1;">เล่นอีกครั้ง</button>
+                            <button onclick="Games.renderGameList()" class="btn btn-secondary" style="flex: 1;">เกมอื่น</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            setupDarkMode() {
+                const settings = Storage.getSettings();
+                if (settings.darkMode) document.body.classList.add('dark');
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => Games.init());
+    </script>
+</body>
+
+</html>

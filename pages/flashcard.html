@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard - MK Vocab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div id="app-content">
+            <div style="text-align: center; padding: 100px 20px;">
+                <div style="font-size: 48px; margin-bottom: 16px;">🎴</div>
+                <div style="color: var(--text-secondary);">กำลังโหลด...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/storage.js"></script>
+    <script src="../js/speech.js"></script>
+    <script>
+        const Flashcard = {
+            grade: 'm1',
+            words: [],
+            currentIndex: 0,
+            isFlipped: false,
+            knownCount: 0,
+
+            gradients: {
+                m1: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)',
+                m2: 'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)',
+                m3: 'linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%)',
+                m4: 'linear-gradient(135deg, #43E97B 0%, #38F9D7 100%)',
+                m5: 'linear-gradient(135deg, #FA709A 0%, #FEE140 100%)',
+                m6: 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)'
+            },
+
+            async init() {
+                const params = new URLSearchParams(window.location.search);
+                this.grade = params.get('grade') || 'm1';
+
+                await this.loadData();
+                this.shuffle();
+                this.render();
+                this.setupDarkMode();
+            },
+
+            async loadData() {
+                try {
+                    const response = await fetch(`../data/${this.grade}.json`);
+                    const data = await response.json();
+                    this.words = data.words || [];
+                } catch (error) {
+                    console.error('Error loading vocab data:', error);
+                    this.words = [];
+                }
+            },
+
+            shuffle() {
+                for (let i = this.words.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this.words[i], this.words[j]] = [this.words[j], this.words[i]];
+                }
+            },
+
+            render() {
+                if (this.words.length === 0) {
+                    document.getElementById('app-content').innerHTML = `
+                        <div style="text-align: center; padding: 100px 20px;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📚</div>
+                            <div>ไม่มีคำศัพท์</div>
+                            <a href="vocab-list.html?grade=${this.grade}" class="btn btn-primary mt-4">กลับ</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (this.currentIndex >= this.words.length) {
+                    this.renderComplete();
+                    return;
+                }
+
+                const word = this.words[this.currentIndex];
+                const progress = ((this.currentIndex) / this.words.length) * 100;
+
+                document.getElementById('app-content').innerHTML = `
+                    <div class="header fade-in">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                            <a href="vocab-list.html?grade=${this.grade}" style="color: var(--apple-blue); text-decoration: none; font-size: 14px;">
+                                ← กลับ
+                            </a>
+                            <span style="color: var(--text-secondary); font-size: 14px;">
+                                ${this.currentIndex + 1} / ${this.words.length}
+                            </span>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div style="height: 6px; background: rgba(0,0,0,0.1); border-radius: 3px; overflow: hidden;">
+                            <div style="height: 100%; width: ${progress}%; background: var(--apple-blue); border-radius: 3px; transition: width 0.3s ease;"></div>
+                        </div>
+                    </div>
+
+                    <div class="flashcard-container" onclick="Flashcard.flip()" style="margin-top: 24px;">
+                        <div class="flashcard ${this.isFlipped ? 'flipped' : ''}">
+                            <div class="flashcard-face flashcard-front" style="background: ${this.gradients[this.grade]};">
+                                <div style="font-size: 36px; font-weight: 700; margin-bottom: 16px;">
+                                    ${word.word}
+                                </div>
+                                <div style="font-size: 14px; opacity: 0.9;">
+                                    ${word.partOfSpeech}
+                                </div>
+                                <button onclick="event.stopPropagation(); Flashcard.speak()" class="audio-btn" style="margin-top: 24px; background: rgba(255,255,255,0.2); box-shadow: none;">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+                                    </svg>
+                                </button>
+                                <div style="font-size: 13px; opacity: 0.7; margin-top: 24px;">
+                                    แตะเพื่อดูความหมาย
+                                </div>
+                            </div>
+                            <div class="flashcard-face flashcard-back">
+                                <div style="font-size: 28px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">
+                                    ${word.thai}
+                                </div>
+                                <div class="cefr-badge cefr-${word.cefr.toLowerCase()}" style="margin-bottom: 16px;">
+                                    ${word.cefr}
+                                </div>
+                                ${word.synonyms ? `
+                                    <div style="font-size: 13px; color: var(--text-secondary);">
+                                        ${word.synonyms}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; margin-top: 32px;">
+                        <button onclick="Flashcard.next(false)" class="btn" style="flex: 1; background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); color: white;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                            ยังไม่รู้
+                        </button>
+                        <button onclick="Flashcard.next(true)" class="btn" style="flex: 1; background: linear-gradient(135deg, #43E97B 0%, #38F9D7 100%); color: white;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                            </svg>
+                            รู้แล้ว
+                        </button>
+                    </div>
+                `;
+            },
+
+            renderComplete() {
+                const percentage = Math.round((this.knownCount / this.words.length) * 100);
+
+                document.getElementById('app-content').innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 80px; margin-bottom: 24px;">🎉</div>
+                        <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">ทำได้ดีมาก!</h1>
+                        <p style="color: var(--text-secondary); margin-bottom: 32px;">คุณทบทวนครบทุกคำแล้ว</p>
+                        
+                        <div class="card" style="margin-bottom: 24px;">
+                            <div style="font-size: 48px; font-weight: 700; color: var(--apple-green);">${this.knownCount}</div>
+                            <div style="color: var(--text-secondary);">คำที่รู้แล้ว จาก ${this.words.length} คำ</div>
+                            <div style="margin-top: 16px; height: 8px; background: rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden;">
+                                <div style="height: 100%; width: ${percentage}%; background: linear-gradient(135deg, #43E97B 0%, #38F9D7 100%); border-radius: 4px;"></div>
+                            </div>
+                            <div style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">${percentage}%</div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px;">
+                            <button onclick="Flashcard.restart()" class="btn btn-primary" style="flex: 1;">
+                                เริ่มใหม่
+                            </button>
+                            <a href="vocab-list.html?grade=${this.grade}" class="btn btn-secondary" style="flex: 1;">
+                                กลับ
+                            </a>
+                        </div>
+                    </div>
+                `;
+            },
+
+            flip() {
+                this.isFlipped = !this.isFlipped;
+                const flashcard = document.querySelector('.flashcard');
+                if (flashcard) {
+                    flashcard.classList.toggle('flipped', this.isFlipped);
+                }
+            },
+
+            speak() {
+                const word = this.words[this.currentIndex];
+                if (word) {
+                    Speech.speak(word.word);
+                }
+            },
+
+            next(known) {
+                if (known) {
+                    this.knownCount++;
+                    const word = this.words[this.currentIndex];
+                    Storage.markAsLearned(this.grade, word.id);
+                }
+                this.currentIndex++;
+                this.isFlipped = false;
+                this.render();
+            },
+
+            restart() {
+                this.currentIndex = 0;
+                this.knownCount = 0;
+                this.isFlipped = false;
+                this.shuffle();
+                this.render();
+            },
+
+            setupDarkMode() {
+                const settings = Storage.getSettings();
+                if (settings.darkMode) {
+                    document.body.classList.add('dark');
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Flashcard.init();
+        });
+    </script>
+</body>
+
+</html>
